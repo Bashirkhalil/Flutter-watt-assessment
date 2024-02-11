@@ -1,28 +1,25 @@
-import 'dart:ffi';
-
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:animate_do/animate_do.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-
   late GoogleMapController mMapController;
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
-  String mLocationAddress ="";
+  String mLocationAddress = "";
   bool isFirstLaunch = true;
+  bool isLookingForAddress = false;
 
   double defaultZoom = 13;
   final LatLng _center = const LatLng(37.7749, -122.4194); // Default center
@@ -35,31 +32,22 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-
     iniGetUserLocation();
   }
 
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text('Maps'),
         ),
-
-       body:  Stack(
-         children: [
-
-           buildGoogleMapWidget() ,
-
-           buildMapMarker()
-,
-           buildShowStartLocationButton()
-         ],
-       )
-
-
-    );
-
+        body: Stack(
+          children: [
+            buildGoogleMapWidget(),
+            buildMapMarker(),
+            buildShowStartLocationButton()
+          ],
+        ));
   }
 
   void _onMapCreated(GoogleMapController controller) =>
@@ -102,10 +90,8 @@ class _LoginPageState extends State<LoginPage> {
 
   void animateToUserLocation(Position position) {
     if (mMapController != null) {
-      mMapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-              LatLng(position!.latitude, position!.longitude),
-              defaultZoom));
+      mMapController!.animateCamera(CameraUpdate.newLatLngZoom(
+          LatLng(position!.latitude, position!.longitude), defaultZoom));
     }
   }
 
@@ -114,9 +100,9 @@ class _LoginPageState extends State<LoginPage> {
       myLocationButtonEnabled: false,
       // compassEnabled: true,
       // mapToolbarEnabled: false,
-       myLocationEnabled: true,
+      myLocationEnabled: true,
       // zoomControlsEnabled: false,
-       rotateGesturesEnabled: false,
+      rotateGesturesEnabled: false,
       minMaxZoomPreference: MinMaxZoomPreference(minZoom, maxZoom),
       mapType: MapType.normal,
       initialCameraPosition: CameraPosition(
@@ -130,15 +116,28 @@ class _LoginPageState extends State<LoginPage> {
         // onMapCreated change the exist style
         initSetMapStyle(controller);
       },
-      onCameraIdle: (){
-        if(mUserMapLocation!=null && !isFirstLaunch){
+      onCameraIdle: () {
+        print("Hello testing");
+        if (mUserMapLocation != null && !isFirstLaunch) {
+
+          // indicate the user is touch the screen so we will show the progress
+          updateIsLookingForAddress(false);
+
           getLocationAddress(mUserMapLocation!);
+
         }
       },
       onCameraMoveStarted: () {
+        print("Hello testing 12");
         if (isFirstLaunch) {
           isFirstLaunch = false;
         }
+      },
+      // onCameraMove:(CameraPosition position) => mUserMapLocation = position.target ,
+      onCameraMove: (CameraPosition position) {
+        print("Hello testing 3");
+        updateIsLookingForAddress(true);
+        mUserMapLocation = position.target;
       },
       markers: _markers,
     );
@@ -151,7 +150,6 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-
               SvgPicture.asset(
                 "assets/svg/Location.svg",
                 color: Colors.black,
@@ -160,8 +158,8 @@ class _LoginPageState extends State<LoginPage> {
                 matchTextDirection: true,
               ),
 
-         //  Image.asset("assets/images/location_b.png",),
-               //  Container(color: Colors.black, height: 42),
+              //  Image.asset("assets/images/location_b.png",),
+              //  Container(color: Colors.black, height: 42),
             ],
           ),
         ),
@@ -169,145 +167,159 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget buildCircleLoaderIndicator() => const Center(child: CircularProgressIndicator(strokeWidth: 2,),);
+  Widget buildCircleLoaderIndicator() => const Center(
+        child: SizedBox(
+            width: 24.0,
+            height: 24.0,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            )),
+      );
 
-  Widget buildShowStartLocationButton(){
+  Widget buildShowStartLocationButton() {
     return mLocationAddress.isNotEmpty
         ? Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: FadeInUp(
-        child: Container(
-          //padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
-          decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(15),
-                  topLeft: Radius.circular(15)),
-              color: Colors.white),
-          child: Column(
-            children: [
-
-              Container(
-                margin: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    top: 16,
-                    bottom: 8),
-                child: Row(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: FadeInUp(
+              child: Container(
+                //padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(15),
+                        topLeft: Radius.circular(15)),
+                    color: Colors.white),
+                child: Column(
                   children: [
-                    // SvgPicture.asset(
-                    //   IconAsset.myLocation,
-                    //   color: AppColor.black,
-                    //   width: 24,
-                    //   height: 24,
-                    //   matchTextDirection: true,
-                    // ),
-                    const SizedBox(
-                      width: 10,
+
+                    Visibility(
+                      visible: !isLookingForAddress,
+                      child: Container(
+                        margin: const EdgeInsets.only(
+                            left: 16, right: 16, top: 16, bottom: 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.my_location,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            const Text(
+                              "Current Location",
+                              // style: blackBodyText14,
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                    Text(
-                      "Current Location",
-                     // style: blackBodyText14,
-                    )
+
+                    const Visibility(
+                      child: SizedBox(
+                        height: 10,
+                      ),
+                    ),
+
+                    Visibility(
+                        visible: isLookingForAddress,
+                        child: buildWidgetLookingForAddress()),
+
+                    const SizedBox(
+                      height: 10,
+                    ),
+
+                    Visibility(
+                        visible: !isLookingForAddress,
+                        child: Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          //const EdgeInsets.only(left: 16,right: 16 ,top: 8,bottom: 16),
+                          child: Text(
+                            mLocationAddress,
+                            //  style: blackBodyText14,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                          ),
+                        )),
+
+                    const SizedBox(
+                      height: 10,
+                    ),
+
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            goToDestinationPage();
+                          },
+                          child: Text('PickUp my Location '),
+                          style:
+                              ElevatedButton.styleFrom(shape: StadiumBorder()),
+                        )),
                   ],
                 ),
               ),
-
-              const SizedBox(
-                width: 24,
-              ),
-              //  Expanded(
-              //  child:
-
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16), //const EdgeInsets.only(left: 16,right: 16 ,top: 8,bottom: 16),
-                child: ListTile(
-                  onTap: () {
-                    // log(locationAddress);
-                    // widget.onAddressClick!(locationAddress, placemark, _lastMapPosition!);
-                  },
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                  // leading: SvgPicture.asset(
-                  //   IconAsset.check,
-                  //   width: 24,
-                  //   height: 24,
-                  //   matchTextDirection: true,
-                  // ),
-                  minLeadingWidth: 25,
-                  title: Text(mLocationAddress,
-                  //  style: blackBodyText14,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
-                  ),
-                ),
-              ),
-              //  ) ,
-
-              const SizedBox(
-                width: 30,
-              ),
-
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: ElevatedButton(
-                  onPressed: () {},
-                  child: Text('PickUp my Location '),
-                  style: ElevatedButton.styleFrom(shape: StadiumBorder()),
-                )
-
-                //
-                // child: GeneralButton(
-                //     icon: ArrowIcon(iconData: Icons.arrow_forward,),
-                //     onPress: () async {
-                //       log(locationAddress);
-                //       widget.onAddressClick!(locationAddress, placemark, _lastMapPosition!);
-                //     },
-                //     title: AppLocalizations.of(context)!.confirm_your_pin_location
-                //   //background: AppColor.primaryColor100),
-                // ),
-              ),
-
-
-            ],
-          ),
-        ),
-      ),
-    )
+            ),
+          )
         : Container();
   }
-
 
   void getLocationAddress(LatLng mUserMapLocation) async {
     try {
       mLocationAddress = "";
       mPlaceMark = null;
       if (mUserMapLocation != null) {
-
         List<Placemark> mPlaceMarks = await placemarkFromCoordinates(
-            mUserMapLocation!.latitude,
-            mUserMapLocation!.longitude, localeIdentifier: 'en_US');
-
+            mUserMapLocation!.latitude, mUserMapLocation!.longitude,
+            localeIdentifier: 'en_US');
 
         //log("ADDress: ${placemarks[0].name}, ${placemarks[0].street}, ${placemarks[0].administrativeArea}, ${placemarks[0].postalCode}");
         setState(() {
           mLocationAddress = mPlaceMarks[0].name ?? "";
-          mLocationAddress +=
-          mPlaceMarks[0].street != null ? ", " + mPlaceMarks[0].street! : "";
+          mLocationAddress += mPlaceMarks[0].street != null
+              ? ", " + mPlaceMarks[0].street!
+              : "";
           mLocationAddress += mPlaceMarks[0].administrativeArea != null
-              ? ", ${mPlaceMarks[0].administrativeArea!}" : "";
-          mLocationAddress +=
-          mPlaceMarks[0].postalCode != null && mPlaceMarks[0].postalCode!.isNotEmpty ? ", ${mPlaceMarks[0].postalCode!}" : "";
+              ? ", ${mPlaceMarks[0].administrativeArea!}"
+              : "";
+          mLocationAddress += mPlaceMarks[0].postalCode != null &&
+                  mPlaceMarks[0].postalCode!.isNotEmpty
+              ? ", ${mPlaceMarks[0].postalCode!}"
+              : "";
           mPlaceMark = mPlaceMarks[0];
 
           print("mLocationAddress = ${mLocationAddress}");
-
         });
-
       }
     } catch (e) {
-        print(e.toString());
+      print(e.toString());
     }
   }
 
+  void goToDestinationPage() {}
+
+  Widget buildWidgetLookingForAddress() {
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
+      child: Row(
+        children: [
+          buildCircleLoaderIndicator(),
+          const SizedBox(
+            width: 15,
+          ),
+          Text(
+            "Looking for Address Name ...",
+          )
+        ],
+      ),
+    );
+  }
+
+  void updateIsLookingForAddress(bool isLookingForAddressValue) {
+   setState(() {
+     isLookingForAddress = isLookingForAddressValue;
+   });
+  }
 }
