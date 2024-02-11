@@ -4,7 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tracking_application/commonGoogleMap/commonGoogleMap.dart';
+import 'package:tracking_application/endLocation/view/end_location_page.dart';
 
 class StartLocationPage extends StatefulWidget {
   const StartLocationPage({super.key});
@@ -18,15 +21,11 @@ class _StartLocationPageState extends State<StartLocationPage> {
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
   String mLocationAddress = "";
+  bool isMapLoading = true ;
   bool isFirstLaunch = true;
   bool isLookingForAddress = false;
 
   double defaultZoom = 13;
-  final LatLng _center = const LatLng(37.7749, -122.4194); // Default center
-  final Set<Marker> _markers = {}; // Markers on the map
-
-  static double minZoom = 10;
-  static double maxZoom = 17;
 
   @override
   void initState() {
@@ -39,107 +38,107 @@ class _StartLocationPageState extends State<StartLocationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Maps'),
+          title: const Text('Start Location'),
         ),
         body: Stack(
           children: [
+
             buildGoogleMapWidget(),
             buildMapMarker(),
-            buildShowStartLocationButton()
+            buildOverTheMapMyLocationButton(),
+            buildShowStartLocationButton() ,
+
           ],
         ));
   }
 
-  void _onMapCreated(GoogleMapController controller) =>
-      mMapController = controller;
-
-  void iniGetUserLocation() async {
-    var permission = await Geolocator.checkPermission();
-    print('isLocationPermission Granted?');
-    print(permission != LocationPermission.denied);
-
-    if (permission != LocationPermission.denied) {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      // List<Placemark> placeMarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-
-      updateLastUserLocation(position);
-
-      animateToUserLocation(position);
-    } else {
-      var permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        print('Location permissions are denied');
-      } else {
-        iniGetUserLocation();
-      }
-    }
-  }
-
-  void updateLastUserLocation(Position position) {
-    setState(() {
-      mUserMapLocation = LatLng(position!.latitude, position!.longitude);
-    });
-  }
-
-  void initSetMapStyle(GoogleMapController controller) async {
-    var mMapStyle = await rootBundle.loadString('assets/map_style/grey.json');
-    controller!.setMapStyle(mMapStyle);
-  }
-
-  void animateToUserLocation(Position position) {
-    if (mMapController != null) {
-      mMapController!.animateCamera(CameraUpdate.newLatLngZoom(
-          LatLng(position!.latitude, position!.longitude), defaultZoom));
-    }
-  }
-
   Widget buildGoogleMapWidget() {
-    return GoogleMap(
-      myLocationButtonEnabled: false,
-      // compassEnabled: true,
-      // mapToolbarEnabled: false,
-      myLocationEnabled: true,
-      // zoomControlsEnabled: false,
-      rotateGesturesEnabled: false,
-      minMaxZoomPreference: MinMaxZoomPreference(minZoom, maxZoom),
-      mapType: MapType.normal,
-      initialCameraPosition: CameraPosition(
-        target: _center,
-        zoom: 10.0,
-      ),
-      onMapCreated: (GoogleMapController controller) {
-        // onMapCreated change the exist style
-        _onMapCreated(controller);
+    return CommonGoogleMap(
+        onMapLoading: (status){
 
-        // onMapCreated change the exist style
-        initSetMapStyle(controller);
-      },
-      onCameraIdle: () {
-        print("Hello testing");
-        if (mUserMapLocation != null && !isFirstLaunch) {
+        },
+        onMapCreate: (controller) {
 
-          // indicate the user is touch the screen so we will show the progress
-          updateIsLookingForAddress(false);
+          print("Hello onMapCreate");
 
-          getLocationAddress(mUserMapLocation!);
+          // onMapCreated change the exist style
+          _onMapCreated(controller);
 
-        }
-      },
-      onCameraMoveStarted: () {
-        print("Hello testing 12");
-        if (isFirstLaunch) {
-          isFirstLaunch = false;
-        }
-      },
-      // onCameraMove:(CameraPosition position) => mUserMapLocation = position.target ,
-      onCameraMove: (CameraPosition position) {
-        print("Hello testing 3");
-        updateIsLookingForAddress(true);
-        mUserMapLocation = position.target;
-      },
-      markers: _markers,
+          // onMapCreated change the exist style
+          initSetMapStyle(controller);
+        },
+        onCameraIdle: () {
+          print("Hello onCameraIdle");
+          if (mUserMapLocation != null && !isFirstLaunch) {
+            // indicate the user is touch the screen so we will show the progress
+            updateIsLookingForAddress(false);
+
+            getLocationAddress(mUserMapLocation!);
+          }
+        },
+        onCameraMoveStarted: () {
+          print("Hello onCameraMoveStarted 12");
+          if (isFirstLaunch) {
+            isFirstLaunch = false;
+          }
+        },
+        onCameraMove: (position) {
+          print("Hello onCameraMove 3");
+          updateIsLookingForAddress(true);
+          mUserMapLocation = position.target;
+        });
+  }
+
+  Widget buildOverTheMapMyLocationButton() {
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Align(
+          alignment: Alignment.topRight,
+          child: Column(
+            children: [
+              RawMaterialButton(
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                fillColor: Colors.white,
+                onPressed: () {
+                  //changeMapStyle
+                },
+                constraints: const BoxConstraints.tightFor(
+                  width: 56.0,
+                  height: 56.0,
+                ),
+                child: const Icon(
+                  Icons.search,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              RawMaterialButton(
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                fillColor: Colors.white,
+                onPressed: () {
+                  // animate the camera
+                  animateAndZoomTheCamera(10);
+
+                  iniGetUserLocation();
+                },
+                constraints: const BoxConstraints.tightFor(
+                  width: 56.0,
+                  height: 56.0,
+                ),
+                child: const Icon(
+                  Icons.my_location,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          )),
     );
   }
 
@@ -192,7 +191,6 @@ class _StartLocationPageState extends State<StartLocationPage> {
                     color: Colors.white),
                 child: Column(
                   children: [
-
                     Visibility(
                       visible: !isLookingForAddress,
                       child: Container(
@@ -215,21 +213,17 @@ class _StartLocationPageState extends State<StartLocationPage> {
                         ),
                       ),
                     ),
-
                     const Visibility(
                       child: SizedBox(
                         height: 10,
                       ),
                     ),
-
                     Visibility(
                         visible: isLookingForAddress,
                         child: buildWidgetLookingForAddress()),
-
                     const SizedBox(
                       height: 10,
                     ),
-
                     Visibility(
                         visible: !isLookingForAddress,
                         child: Container(
@@ -243,11 +237,9 @@ class _StartLocationPageState extends State<StartLocationPage> {
                             maxLines: 3,
                           ),
                         )),
-
                     const SizedBox(
                       height: 10,
                     ),
-
                     Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: ElevatedButton(
@@ -264,6 +256,72 @@ class _StartLocationPageState extends State<StartLocationPage> {
             ),
           )
         : Container();
+  }
+
+  Widget buildWidgetLookingForAddress() {
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
+      child: Row(
+        children: [
+          buildCircleLoaderIndicator(),
+          const SizedBox(
+            width: 15,
+          ),
+          const Text(
+            "Looking for Address Name ...",
+          )
+        ],
+      ),
+    );
+  }
+
+  void _onMapCreated(GoogleMapController controller) => mMapController = controller;
+
+
+  void iniGetUserLocation() async {
+    var permission = await Geolocator.checkPermission();
+    print('isLocationPermission Granted?');
+    print(permission != LocationPermission.denied);
+
+    if (permission != LocationPermission.denied) {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      // List<Placemark> placeMarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      updateLastUserLocation(position);
+
+      animateToUserLocation(position);
+    } else {
+      var permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        print('Location permissions are denied');
+      } else {
+        iniGetUserLocation();
+      }
+    }
+  }
+
+  void initSetMapStyle(GoogleMapController controller) async {
+    var mMapStyle = await rootBundle.loadString('assets/map_style/grey.json');
+    controller!.setMapStyle(mMapStyle);
+  }
+
+  void animateToUserLocation(Position position) {
+    if (mMapController != null) {
+      mMapController!.animateCamera(CameraUpdate.newLatLngZoom(
+          LatLng(position!.latitude, position!.longitude), defaultZoom));
+    }
+  }
+
+  void animateAndZoomTheCamera(double zoomValue) async {
+    if (mMapController != null) {
+      setState(() {
+        mMapController!.animateCamera(CameraUpdate.newLatLngZoom(
+            LatLng(mUserMapLocation!.latitude, mUserMapLocation!.longitude),
+            zoomValue));
+      });
+    }
   }
 
   void getLocationAddress(LatLng mUserMapLocation) async {
@@ -298,28 +356,13 @@ class _StartLocationPageState extends State<StartLocationPage> {
     }
   }
 
-  void goToDestinationPage() {}
-
-  Widget buildWidgetLookingForAddress() {
-    return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
-      child: Row(
-        children: [
-          buildCircleLoaderIndicator(),
-          const SizedBox(
-            width: 15,
-          ),
-          const Text(
-            "Looking for Address Name ...",
-          )
-        ],
-      ),
-    );
+  void goToDestinationPage() {
+    Get.to(const EndLocationPage());
   }
 
-  void updateIsLookingForAddress(bool isLookingForAddressValue) {
-   setState(() {
-     isLookingForAddress = isLookingForAddressValue;
-   });
-  }
+  void updateIsLookingForAddress(bool isLookingForAddressValue) =>
+      setState(() => isLookingForAddress = isLookingForAddressValue);
+
+  void updateLastUserLocation(Position position) => setState(
+      () => mUserMapLocation = LatLng(position!.latitude, position!.longitude));
 }
