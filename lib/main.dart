@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tracking_application/home/view/login_page.dart';
+import 'package:tracking_application/startLocation/view/start_location_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:  const LoginPage(),
+      home:  const StartLocationPage(),
     );
   }
 }

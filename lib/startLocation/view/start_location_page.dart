@@ -6,14 +6,14 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class StartLocationPage extends StatefulWidget {
+  const StartLocationPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<StartLocationPage> createState() => _StartLocationPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _StartLocationPageState extends State<StartLocationPage> {
   late GoogleMapController mMapController;
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
