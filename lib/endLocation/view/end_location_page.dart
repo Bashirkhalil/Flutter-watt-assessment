@@ -6,14 +6,14 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class StartLocationPage extends StatefulWidget {
-  const StartLocationPage({super.key});
+class EndLocationPage extends StatefulWidget {
+  const EndLocationPage({super.key});
 
   @override
-  State<StartLocationPage> createState() => _StartLocationPageState();
+  State<EndLocationPage> createState() => _StartLocationPageState();
 }
 
-class _StartLocationPageState extends State<StartLocationPage> {
+class _StartLocationPageState extends State<EndLocationPage> {
   late GoogleMapController mMapController;
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
@@ -252,11 +252,11 @@ class _StartLocationPageState extends State<StartLocationPage> {
                         padding: const EdgeInsets.only(bottom: 16),
                         child: ElevatedButton(
                           onPressed: () {
-                            goToDestinationPage();
+                            goToResultPage();
                           },
                           style:
-                              ElevatedButton.styleFrom(shape: StadiumBorder()),
-                          child: const Text('PickUp my Location '),
+                              ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                          child: const Text('My Location Destination'),
                         )),
                   ],
                 ),
@@ -298,7 +298,9 @@ class _StartLocationPageState extends State<StartLocationPage> {
     }
   }
 
-  void goToDestinationPage() {}
+  void goToResultPage() {
+
+  }
 
   Widget buildWidgetLookingForAddress() {
     return Container(
