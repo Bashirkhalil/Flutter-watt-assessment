@@ -90,19 +90,24 @@ class _LoginPageState extends State<LoginPage> {
                     style: ElevatedButton.styleFrom(
                         shape: const StadiumBorder()),
                     child: Obx(() {
-                      print("ValueR -> ${mLoginController.mResponseStatus.value}");
 
-                      if(mLoginController.mResponseStatus.value == 200){
-                      Get.to(const StartLocationPage());
-                      }else{
-                        Fluttertoast.showToast(
-                            msg: "Error valid username and password",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                            fontSize: 16.0);
+                      try{
+                        print("ValueR -> ${mLoginController.mResponseStatus.value}");
+
+                        if(mLoginController.mResponseStatus.value == 200){
+                          Get.to(() => const StartLocationPage());
+                        }else{
+                          Fluttertoast.showToast(
+                              msg: "Error valid username and password",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        }
+                      }catch(e){
+                        print("Error ${e}");
                       }
 
                       return const Text('Login');
