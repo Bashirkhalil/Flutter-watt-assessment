@@ -96,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         if(mLoginController.mResponseStatus.value == 200){
                           Get.to(() => const StartLocationPage());
-                        }else{
+                        }else if(mLoginController.mResponseStatus.value == 500){
                           Fluttertoast.showToast(
                               msg: "Error valid username and password",
                               toastLength: Toast.LENGTH_SHORT,

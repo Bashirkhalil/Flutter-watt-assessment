@@ -11,7 +11,6 @@ import 'package:tracking_application/commonGoogleMap/commonGoogleMap.dart';
 import 'package:tracking_application/endLocation/view/end_location_page.dart';
 import 'package:tracking_application/startLocation/model/start_location_model.dart';
 
-import '../../summrary/model/suammry_model.dart';
 import '../controller/start_location_controller.dart';
 
 class StartLocationPage extends StatefulWidget {
@@ -26,15 +25,16 @@ class _StartLocationPageState extends State<StartLocationPage> {
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
   String mLocationAddress = "";
-  bool isMapLoading = true ;
+  bool isMapLoading = true;
+
   bool isFirstLaunch = true;
   bool isLookingForAddress = false;
 
   double defaultZoom = 13;
 
-  final StartLocationController mStartLocationController = Get.put(StartLocationController());
+  final StartLocationController mStartLocationController =
+      Get.put(StartLocationController());
   var fToast = FToast();
-
 
   @override
   void initState() {
@@ -42,7 +42,6 @@ class _StartLocationPageState extends State<StartLocationPage> {
 
     // init  toast msg
     fToast.init(context);
-
 
     iniGetUserLocation();
   }
@@ -55,23 +54,18 @@ class _StartLocationPageState extends State<StartLocationPage> {
         ),
         body: Stack(
           children: [
-
             buildGoogleMapWidget(),
             buildMapMarker(),
             buildOverTheMapMyLocationButton(),
-            buildShowStartLocationButton() ,
-
+            buildShowStartLocationButton(),
           ],
         ));
   }
 
   Widget buildGoogleMapWidget() {
     return CommonGoogleMap(
-        onMapLoading: (status){
-
-        },
+        onMapLoading: (status) {},
         onMapCreate: (controller) {
-
           print("Hello onMapCreate");
 
           // onMapCreated change the exist style
@@ -103,7 +97,6 @@ class _StartLocationPageState extends State<StartLocationPage> {
   }
 
   Widget buildOverTheMapMyLocationButton() {
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Align(
@@ -195,75 +188,84 @@ class _StartLocationPageState extends State<StartLocationPage> {
             left: 0,
             right: 0,
             child: FadeInUp(
-              child: Container(
-                //padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(15),
-                        topLeft: Radius.circular(15)),
-                    color: Colors.white),
-                child: Column(
-                  children: [
-                    Visibility(
-                      visible: !isLookingForAddress,
-                      child: Container(
-                        margin: const EdgeInsets.only(
-                            left: 16, right: 16, top: 16, bottom: 8),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.my_location,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            const Text(
-                              "Current Location",
-                              // style: blackBodyText14,
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                    const Visibility(
-                      child: SizedBox(
-                        height: 10,
-                      ),
-                    ),
-                    Visibility(
-                        visible: isLookingForAddress,
-                        child: buildWidgetLookingForAddress()),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Visibility(
+              child: GestureDetector(
+                onTap: (){
+                  goToDestinationPage();
+                },
+                child: Container(
+                  //padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(15),
+                          topLeft: Radius.circular(15)),
+                      color: Colors.white),
+                  child: Column(
+                    children: [
+                      Visibility(
                         visible: !isLookingForAddress,
                         child: Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          //const EdgeInsets.only(left: 16,right: 16 ,top: 8,bottom: 16),
-                          child: Text(
-                            mLocationAddress,
-                            //  style: blackBodyText14,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 3,
+                          margin: const EdgeInsets.only(
+                              left: 16, right: 16, top: 16, bottom: 8),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.my_location,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              const Text(
+                                "Current Location",
+                                // style: blackBodyText14,
+                              )
+                            ],
                           ),
-                        )),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            goToDestinationPage();
-                          },
-                          style:
-                              ElevatedButton.styleFrom(shape: StadiumBorder()),
-                          child: const Text('PickUp my Location '),
-                        )),
-                  ],
+                        ),
+                      ),
+                      const Visibility(
+                        child: SizedBox(
+                          height: 10,
+                        ),
+                      ),
+                      Visibility(
+                          visible: isLookingForAddress,
+                          child: buildWidgetLookingForAddress()),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Visibility(
+                          visible: !isLookingForAddress,
+                          child: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            //const EdgeInsets.only(left: 16,right: 16 ,top: 8,bottom: 16),
+                            child: Text(
+                              mLocationAddress,
+                              //  style: blackBodyText14,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 3,
+                            ),
+                          )),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: ElevatedButton(
+                            onPressed: (){
+
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                             //   goToDestinationPage();
+                              });
+
+                            },
+                            style: ElevatedButton.styleFrom(
+                                shape: const StadiumBorder()),
+                            child: const Text('PickUp my Location '),
+                          )),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -288,8 +290,8 @@ class _StartLocationPageState extends State<StartLocationPage> {
     );
   }
 
-  void _onMapCreated(GoogleMapController controller) => mMapController = controller;
-
+  void _onMapCreated(GoogleMapController controller) =>
+      mMapController = controller;
 
   void iniGetUserLocation() async {
     var permission = await Geolocator.checkPermission();
@@ -371,25 +373,28 @@ class _StartLocationPageState extends State<StartLocationPage> {
 
   void goToDestinationPage() {
 
-    if(mUserMapLocation != null ){
-      var mStartLocationModel = StartLocationModel(
-          mLocationAddress,
-          LatLng(mUserMapLocation!.latitude, mUserMapLocation!.longitude!));
+      if (mUserMapLocation != null) {
 
-      mStartLocationController.setUserStartLocation(mStartLocationModel);
+        print("mUserMapLocation A= ${mUserMapLocation!.latitude}");
+        print("mUserMapLocation B= ${mUserMapLocation!.longitude}");
 
-      Get.to(const EndLocationPage());
-    }else{
-      Fluttertoast.showToast(
-          msg: "Couldn't find user location ",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
-    }
+       var mStartLocationModel = StartLocationModel(mLocationAddress,
+           LatLng(mUserMapLocation!.latitude, mUserMapLocation!.longitude));
+       mStartLocationController.setUserStartLocation(mStartLocationModel);
+
+        Get.to(() =>  const EndLocationPage());
+
+
+      } else {
+        Fluttertoast.showToast(
+            msg: "Couldn't find user location ",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
 
   }
 

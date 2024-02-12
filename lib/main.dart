@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracking_application/startLocation/view/start_location_page.dart';
+import 'package:tracking_application/summrary/view/summary.dart';
 
+import 'endLocation/view/end_location_page.dart';
 import 'login/view/login_page.dart';
 
 void main() async {
