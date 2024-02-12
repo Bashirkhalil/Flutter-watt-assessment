@@ -2,12 +2,17 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tracking_application/commonGoogleMap/commonGoogleMap.dart';
 import 'package:tracking_application/endLocation/view/end_location_page.dart';
+import 'package:tracking_application/startLocation/model/start_location_model.dart';
+
+import '../../summrary/model/suammry_model.dart';
+import '../controller/start_location_controller.dart';
 
 class StartLocationPage extends StatefulWidget {
   const StartLocationPage({super.key});
@@ -17,7 +22,7 @@ class StartLocationPage extends StatefulWidget {
 }
 
 class _StartLocationPageState extends State<StartLocationPage> {
-  late GoogleMapController mMapController;
+  GoogleMapController? mMapController;
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
   String mLocationAddress = "";
@@ -27,9 +32,17 @@ class _StartLocationPageState extends State<StartLocationPage> {
 
   double defaultZoom = 13;
 
+  final StartLocationController mStartLocationController = Get.put(StartLocationController());
+  var fToast = FToast();
+
+
   @override
   void initState() {
     super.initState();
+
+    // init  toast msg
+    fToast.init(context);
+
 
     iniGetUserLocation();
   }
@@ -357,7 +370,27 @@ class _StartLocationPageState extends State<StartLocationPage> {
   }
 
   void goToDestinationPage() {
-    Get.to(const EndLocationPage());
+
+    if(mUserMapLocation != null ){
+      var mStartLocationModel = StartLocationModel(
+          mLocationAddress,
+          LatLng(mUserMapLocation!.latitude, mUserMapLocation!.longitude!));
+
+      mStartLocationController.setUserStartLocation(mStartLocationModel);
+
+      Get.to(const EndLocationPage());
+    }else{
+      Fluttertoast.showToast(
+          msg: "Couldn't find user location ",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+    }
+
   }
 
   void updateIsLookingForAddress(bool isLookingForAddressValue) =>

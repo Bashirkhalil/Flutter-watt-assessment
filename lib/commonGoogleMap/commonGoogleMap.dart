@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CommonGoogleMap extends StatelessWidget {
@@ -11,6 +12,8 @@ class CommonGoogleMap extends StatelessWidget {
       this.zoomControlsEnabled = false ,
       this.rotateGesturesEnabled = false,
       this.mapType = MapType.normal ,
+      this.mLatLngPolyPoints ,
+      this.markers,
       required this.onMapCreate,
       required this.onCameraIdle,
       required this.onCameraMoveStarted,
@@ -31,15 +34,17 @@ class CommonGoogleMap extends StatelessWidget {
   final bool zoomControlsEnabled;
   final bool rotateGesturesEnabled;
   final MapType mapType;
+  final List<LatLng>? mLatLngPolyPoints;
+  final Set<Marker>? markers  ; // Markers on the map
 
   final LatLng _center = const LatLng(37.7749, -122.4194); // Default center
-  final Set<Marker> _markers = {}; // Markers on the map
   static double minZoom = 10;
   static double maxZoom = 17;
 
   @override
   Widget build(BuildContext context) {
     return GoogleMap(
+      polylines: const <Polyline>{} ,//getPolyLine(context),
       myLocationButtonEnabled: myLocationButtonEnabled,
       compassEnabled: compassEnabled,
       mapToolbarEnabled: mapToolbarEnabled,
@@ -65,7 +70,21 @@ class CommonGoogleMap extends StatelessWidget {
         onCameraMove(position);
         onMapLoading(false);
       },
-      markers: _markers,
+      markers: markers ?? {},
     );
   }
+
+  getPolyLine(BuildContext context) {
+    if(mLatLngPolyPoints!=null) {
+     return Polyline(
+        polylineId: const PolylineId('route'),
+        color: Theme.of(context).primaryColor,
+        width: 5,
+        points: mLatLngPolyPoints!,
+      );
+  }else {
+     return const <Polyline>{};
+    }
+  }
+
 }

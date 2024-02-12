@@ -2,14 +2,18 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tracking_application/endLocation/model/end_location_model.dart';
 import 'package:tracking_application/endLocation/view/end_location_page.dart';
 
 import '../../commonGoogleMap/commonGoogleMap.dart';
+import '../../summrary/view/summary.dart';
+import '../controller/destination_location_controller.dart';
 
 class EndLocationPage extends StatefulWidget {
   const EndLocationPage({super.key});
@@ -19,12 +23,14 @@ class EndLocationPage extends StatefulWidget {
 }
 
 class _EndLocationPageState extends State<EndLocationPage> {
-  late GoogleMapController mMapController;
+  GoogleMapController? mMapController;
   LatLng? mUserMapLocation;
   Placemark? mPlaceMark;
   String mLocationAddress = "";
   bool isFirstLaunch = true;
   bool isLookingForAddress = false;
+
+  final EndLocationController mEndLocationController = Get.put(EndLocationController());
 
   double defaultZoom = 13;
 
@@ -32,7 +38,8 @@ class _EndLocationPageState extends State<EndLocationPage> {
   void initState() {
     super.initState();
 
-    iniGetUserLocation();
+     iniGetUserLocation();
+
   }
 
   @override
@@ -41,6 +48,7 @@ class _EndLocationPageState extends State<EndLocationPage> {
         appBar: AppBar(
           title: const Text('Destination Location'),
         ),
+
         body: Stack(
           children: [
 
@@ -50,7 +58,9 @@ class _EndLocationPageState extends State<EndLocationPage> {
             buildShowStartLocationButton() ,
 
           ],
-        ));
+        )
+
+    );
   }
 
   Widget buildGoogleMapWidget() {
@@ -105,7 +115,7 @@ class _EndLocationPageState extends State<EndLocationPage> {
                     BorderRadius.circular(15)),
                 fillColor: Colors.white,
                 onPressed:( ){
-                  //changeMapStyle
+
                 },
                 constraints:
                 const BoxConstraints.tightFor(
@@ -160,7 +170,6 @@ class _EndLocationPageState extends State<EndLocationPage> {
                 matchTextDirection: true,
               ),
 
-              //  Image.asset("assets/images/location_b.png",),
               //  Container(color: Colors.black, height: 42),
             ],
           ),
@@ -342,7 +351,29 @@ class _EndLocationPageState extends State<EndLocationPage> {
   }
 
   void goToDestinationPage() {
-    Get.to(const EndLocationPage());
+
+    if(mUserMapLocation != null ){
+
+      var mEndLocationModel = EndLocationModel(
+          mLocationAddress,
+          LatLng(mUserMapLocation!.latitude, mUserMapLocation!.longitude!));
+
+      mEndLocationController.setUserStartLocation(mEndLocationModel);
+
+      Get.off(const SummaryPage());
+
+    }else{
+      Fluttertoast.showToast(
+          msg: "Couldn't find user location ",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+    }
+
   }
 
   void _onMapCreated(GoogleMapController controller) =>
@@ -353,7 +384,7 @@ class _EndLocationPageState extends State<EndLocationPage> {
     controller!.setMapStyle(mMapStyle);
   }
 
-  void animateToUserLocation(Position position) {
+  Future<void> animateToUserLocation(Position position) async {
     if (mMapController != null) {
       mMapController!.animateCamera(CameraUpdate.newLatLngZoom(
           LatLng(position!.latitude, position!.longitude), defaultZoom));
